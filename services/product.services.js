@@ -1,54 +1,62 @@
-const Product = require('../models/Product');
+const Product = require("../models/Product");
 
 exports.getProductsService = async (filters, queries) => {
 
-    const products = await Product.find(filters)
-      .skip(queries.skip)
-      .limit(queries.limit)
-      .select(queries.fields)
-      .sort(queries.sortBy)
-  
-    const total = await Product.countDocuments(filters)
-    const page = Math.ceil(totalProducts/queries.limit)
-    return {total,page,products};
-  };
-  
+  const products = await Product.find(filters)
+    .skip(queries.skip)
+    .limit(queries.limit)
+    .select(queries.fields)
+    .sort(queries.sortBy)
 
-exports.createProductService =  async (data) =>{
-    const product = await Product.create(data)
-    return product
-}
+  const total = await Product.countDocuments(filters)
+  const page = Math.ceil(totalProducts/queries.limit)
+  return {total,page,products};
+};
 
-exports.updateProductService =  async (productId, data) =>{
-    const result = await Product.updateOne({_id:productId}, {$set:data},{
-        runValidators:true
-    })
-    return result
-}
+exports.createProductService = async (data) => {
+  const product = await Product.create(data);
+  return product;
+};
 
-exports.bulkUpdateProductService =  async (data) =>{
-    // const result = await Product.updateMany({_id:data.ids}, data.data,{
-    //     runValidators:true
-    // })
+exports.updateProductByIdService = async (productId, data) => {
+  const result = await Product.updateOne(
+    { _id: productId },
+    { $inc: data },
+    {
+      runValidators: true,
+    }
+  );
 
-    const products = [];
+  // const product = await Product.findById(productId);
+  // const result = await product.set(data).save();
+  return result;
+};
 
-    data.ids.forEach(product => {
-        products.push(Product.updateOne({_id: product.id}, product.data))
-    });
+exports.bulkUpdateProductService = async (data) => {
+  // console.log(data.ids,data.data)
+  // const result = await Product.updateMany({ _id: data.ids }, data.data, {
+  //     runValidators: true
+  // });
 
-    const result =await Promise.all(products);
-    console.log(result);
-    return result
-}
+  const products = [];
+
+  data.ids.forEach((product) => {
+    products.push(Product.updateOne({ _id: product.id }, product.data));
+  });
+
+  const result = await Promise.all(products);
+  console.log(result);
+
+  return result;
+};
+
+exports.deleteProductByIdService = async (id) => {
+  const result = await Product.deleteOne({ _id: id });
+  return result;
+};
 
 exports.bulkDeleteProductService = async (ids) => {
-    const result = await Product.deleteMany({});
-  
-    return result;
-  };
+  const result = await Product.deleteMany({ _id: ids });
 
-exports.deleteProductByIdService =  async (id) =>{
-    const result = await Product.deleteOne({_id:id})
-    return result;
-}
+  return result;
+};
